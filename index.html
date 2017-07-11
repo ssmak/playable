@@ -4,7 +4,8 @@
     <meta charset="utf-8">
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<!-- <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> -->
     <meta name="description" content="Playable">
     <meta name="keywords" content="Playable">
     <meta name="author" content="ssmak">
@@ -15,7 +16,8 @@
     <meta http-equiv="pragma" content="no-cache" />
     <link rel="icon" href="favicon.ico">  
     <title>Playable</title>
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">	
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+	<link rel="stylesheet" href="node_modules/font-awesome/css/font-awesome.min.css">
 	<style>
 	</style>
   </head>
@@ -24,19 +26,30 @@
 		<!-- https://www.youtube.com/embed/OtEJ6LGCW-U?list=RDOtEJ6LGCW-U&amp;controls=0&amp;showinfo=0&autoplay=1&hd=1 -->
 		<iframe id="playable-content" class="embed-responsive-item" src="" frameborder="0" allowfullscreen></iframe>
 	</div>
-	<script src="https://code.jquery.com/jquery-1.11.1.js"></script>		
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>	
+	<script src="node_modules/jquery/dist/jquery.min.js"></script>		
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
 	<script src="/socket.io/socket.io.js"></script>
+	<script>
+		var DEBUG = true;
+		
+		if(!DEBUG) {
+			console.log = function () {};
+			console.error = function () {};
+		}
+	</script>	
 	<script>
 		$(function () {
 			let socket = io();
 			
 			socket.on('play', function (cmd) {
+				console.log("viewer: receive cmd:");
 				console.log(cmd);
 				
-				if(cmd.url) {
-					console.log("play url: " + cmd.url);
-					$('#playable-content').attr("src", cmd.url);
+				if(cmd.resource_id) {
+					console.log("play resource id: " + cmd.resource_id);
+					let resource_url = 'https://www.youtube.com/embed/' + cmd.resource_id + '?list=RDOtEJ6LGCW-U&amp;controls=0&amp;showinfo=0&autoplay=1&hd=1';
+					$('#playable-content').attr("src", resource_url);
 				}
 			});
 		});

@@ -1,10 +1,11 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" ng-app="app">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<!-- <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> -->
     <meta name="description" content="Playable">
     <meta name="keywords" content="Playable">
     <meta name="author" content="ssmak">
@@ -15,41 +16,197 @@
     <meta http-equiv="pragma" content="no-cache" />
     <link rel="icon" href="favicon.ico">  
     <title>Playable</title>
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">	
-    <style>
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      body { font: 13px Helvetica, Arial; }
-      form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
-      form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
-      form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
-      #messages { list-style-type: none; margin: 0; padding: 0; }
-      #messages li { padding: 5px 10px; }
-      #messages li:nth-child(odd) { background: #eee; }
-    </style>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+	<link rel="stylesheet" href="node_modules/font-awesome/css/font-awesome.min.css">
+	<style>	
+	body {
+		font-size:12pt;
+		margin: 0;
+		padding: 0;
+	}
+	.container-fluid {
+		padding: 0;
+	}
+	.playable-item div.thumbnail {
+		overflow: hidden;
+	}
+	.clickable {
+		cursor: pointer;
+	}
+	#search-panel {
+		background-color: rgb(250, 250, 250);
+		width: 100%;
+		padding: 15px;
+	}
+	#search-bar span.fa-youtube-play {
+		font-size: 1.5em;
+		color: red;
+	}
+	#search-panel span.fa-search {
+		cursor: pointer;
+	}
+	#top-icon {
+		position: fixed;
+		right: 25px;
+		bottom: 15%;
+		background-color: rgb(250, 250, 250);
+		width: 50px;
+		height: 50px;
+		text-align: center;
+		font-size: 2em;
+		border-radius: 25px;
+		opacity: 0.8;
+	}
+	</style>
   </head>
-  <body>  
-    <ul id="messages"></ul>
-    <form action="">
-      <input id="url" autocomplete="off" /><button>Play</button>
-    </form>  
-	<script src="https://code.jquery.com/jquery-1.11.1.js"></script>		
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>	
+  <body style="display:none">
+	<div class="container-fluid" ng-controller="root">
+		<div id="search-panel" class="col-xs-12">
+			<div id="search-bar" class="input-group">
+			  <span class="input-group-addon" id="basic-addon1"><span class="fa fa-youtube-play"></span></span>
+			  <input name="search_keyword" type="text" class="form-control" placeholder="search something here.." ng-keyup="keyup($event)">
+			  <span class="input-group-addon" id="basic-addon1"><span class="fa fa-search" ng-click="newSearch()"></span></span>
+			</div>
+		</div>
+		<div class="row playable-item">
+			<div class="col-xs-12 col-sm-6 col-md-4 col-lg-3 row-eq-height" ng-repeat="p in playable">
+				<div class="thumbnail" style="text-align:center">
+					<img src="{{ p.thumbnails.high.url }}" class="img-responsive clickable" ng-click="playResource(p.id)" />
+					<div class="caption" style="margin-top:5px">
+						<h3 class="clickable" ng-click="playResource(p.id)">{{ p.title }}</h3>
+						<p>
+							{{ p.description }}
+						</p>
+						<p style="font-size:0.7em; text-align:right">
+							{{ p.publishedAt }}
+						</p>
+					</div>
+				</div>
+			</div>		
+		</div>
+		<div ng-show="is_loading" style="width:100%; text-align:center">
+			<img class="img-responsive" src="loading.gif"/>
+		</div>
+		<div id="top-icon" class="clickable" ng-click="bring2Top()"><span class="fa fa-level-up"></span></div>
+	</div> 
+	<script src="node_modules/jquery/dist/jquery.min.js"></script>		
+	<script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+	<script src="node_modules/angular/angular.min.js"></script>
 	<script src="/socket.io/socket.io.js"></script>
+	<script src="./resource-loader.bundle.min.js"></script>			
+	<script>
+		var DEBUG = true;
+		
+		if(!DEBUG) {
+			console.log = function () {};
+			console.error = function () {};
+		}
+	</script>
 	<script>
 		$(function () {
+			/*
+			listen page event
+			*/
+			$(window).scroll(function () {
+				if(($(window).scrollTop() + $(window).height()) > ($(document).height() - 100)) {
+					loadMore();
+				}
+			});
+			
+			/*
+			connect to server websocket
+			*/
 			let socket = io();
-			
-			$('form').submit(function () {
-				socket.emit('play', {
-					url: $('#url').val()
-				});
-				$('#url').val('');
-				return false;
-			});
-			
+						
 			socket.on('system', function (msg) {
-				$('#messages').append($('<li>').text(msg));
+				console.log(msg);
 			});
+			
+			window.play = function (resource_id) {
+				console.log("remote: play resource: ", resource_id);
+			
+				socket.emit('play', {
+					resource_id: resource_id
+				});	
+			};
+		});
+	</script>
+	<script>			
+		const app = angular.module('app', []);
+		app.controller("root", function ($scope, $window) {	
+			$scope.search = function (keyword, limit, page_token) {
+				searchFromYoutube(keyword, limit, page_token)
+				.then(function (result) {
+					console.dir(result.results);
+					console.dir(result.page_info);
+					
+					//store the next page token
+					if(result.page_info.nextPageToken && /^[a-z0-9]+$/i.test(result.page_info.nextPageToken)) {
+						$scope.next_page_token = result.page_info.nextPageToken;
+					} else {
+						$scope.next_page_token = null;
+					}
+					for(let playable_item of result.results) {
+						$scope.playable.push(playable_item);
+					}
+					$scope.$apply();
+					$scope.is_loading = false;
+				})
+				.catch(function (err) {
+					console.error(err);
+					
+					$scope.is_loading = false;
+				});				
+			};
+			
+			$scope.newSearch = function () {
+				let keyword = $('input[name=search_keyword]').val();
+				$scope.keyword = keyword;
+				$scope.playable = [];
+				$scope.search(keyword, $scope.limit, null);
+			}
+			
+			$scope.loadMore = function () {
+				if(!$scope.is_loading) {
+					console.log('load more, next page token: ', $scope.next_page_token);
+					
+					$scope.is_loading = true;
+					$scope.search($scope.keyword, $scope.limit, $scope.next_page_token);
+				}
+			}
+			
+			$scope.keyup = function($event) {
+				console.log('key up: ', $event);
+				
+				if($event.keyCode === 13) { //enter
+					$scope.newSearch();
+				}
+			}
+			
+			$scope.playResource = function(resource_id) {				
+				play(resource_id);
+			}
+			
+			$scope.bring2Top = function () {
+				$window.scrollTo(0, 0);
+			}
+			
+			//initial variables
+			$window.loadMore = $scope.loadMore;
+			$scope.limit = 50;
+			$scope.is_loading = false;
+			$scope.playable = [];			
+			$scope.next_page_token = null;
+			$scope.keyword = "Wing fung Financial Group";
+			
+			//default
+			$scope.is_loading = true;
+			$scope.search($scope.keyword, $scope.limit, $scope.next_page_token);
+		});
+		angular.element(function () {
+			$('body').css('display', 'block');
 		});
 	</script>
   </body>
