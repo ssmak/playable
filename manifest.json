@@ -1,0 +1,13 @@
+{
+  "short_name": "Playable",
+  "name": "Play youtube video in everywhere",
+  "icons": [
+    {
+      "src": "apple-touch-icon.png",
+      "type": "image/png",
+      "sizes": "225x225"
+    }
+  ],
+  "display": "standalone",
+  "start_url": "https://playable.rachelnsteve.com:3303/remote"
+}
