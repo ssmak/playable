@@ -119,7 +119,7 @@
 			retrieve the app version and relocate the app logo
 			*/
 			$.get('package.json', function (content) {
-				$('title').html($('title').html() + ' (v' + content.version + ')');
+				$('input[name=search_keyword]').attr('placeholder', $('title').html() + ' (v' + content.version + ')');
 			});		
 		
 			/*

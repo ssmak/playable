@@ -51,7 +51,7 @@
   <body>
 	<div id="logo">
 		<div>
-			<img src="apple-touch-icon.png" class="img-responsive" />
+			<img src="apple-touch-icon.png" class="img-responsive" style="width:128px" />
 		</div>
 		<div id="playable-title">
 			<span>Playable</span><span id="app-ver"></span>
@@ -74,14 +74,14 @@
 		}
 		
 		var is_init = false;
-	</script>	
+	</script>
 	<script>
 		$(function () {
 			/*
 			retrieve the app version and relocate the app logo
 			*/
 			$.get('package.json', function (content) {
-				$('title').html($('title').html() + ' (v' + content.version + ')');
+				//$('title').html($('title').html() + ' (v' + content.version + ')');
 				$('#app-ver').html(' (v' + content.version + ')');
 				$('#logo').css('margin-top', (($(document).height() / 2.0) - $('#logo').height()));
 				$('#logo').css('visibility', 'visible');
@@ -108,8 +108,10 @@
 					is_init = true;
 					$('#logo').css('display', 'none');
 					
-					let resource_url = 'https://www.youtube.com/embed/' + cmd.resource_id + '?controls=0&showinfo=0&autoplay=1&hd=1';
+					let resource_url = 'https://www.youtube.com/embed/' + cmd.resource_id + '?autoplay=1&controls=0&showinfo=0&hd=1';
+					console.log("play resource: ", resource_url);
 					$('#playable-content').attr("src", resource_url);
+					$('#playable-content').play();
 				}
 			});
 		});
