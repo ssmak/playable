@@ -24,6 +24,7 @@
     <title>Playable(R)</title>
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
 	<link rel="stylesheet" href="node_modules/font-awesome/css/font-awesome.min.css">
+	<link rel="stylesheet" href="node_modules/jquery-toast-plugin/dist/jquery.toast.min.css">
 	<style>	
 	body {
 		font-size:12pt;
@@ -38,6 +39,11 @@
 		overflow: hidden;
 	}
 	.clickable {
+		cursor: pointer;
+	}
+	.fa-cloud-download {
+		color: #f00;
+		font-size: 1.8em;
 		cursor: pointer;
 	}
 	#search-panel {
@@ -84,6 +90,9 @@
 						<p>
 							{{ p.description }}
 						</p>
+						<p style="text-align:right">
+							<span class="fa fa-cloud-download" ng-click="downloadResource(p.id, p.title)"></span>
+						</p>
 						<p style="font-size:0.7em; text-align:right">
 							{{ p.publishedAt }}
 						</p>
@@ -97,6 +106,7 @@
 		<div id="top-icon" class="clickable" ng-click="bring2Top()"><span class="fa fa-level-up"></span></div>
 	</div> 
 	<script src="node_modules/jquery/dist/jquery.min.js"></script>
+	<script src="node_modules/jquery-toast-plugin/dist/jquery.toast.min.js"></script>
 	<!--
 	<script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
 	-->
@@ -115,6 +125,27 @@
 	</script>
 	<script>
 		$(function () {
+			window.alert = function (params) {
+				if(!params) {
+					return;
+				}
+			
+				if(!('type' in params)) {
+					params.type = 'info';
+				}
+				
+				$.toast({
+					heading: params.title,
+					text: params.message,
+					showHideTransition: 'fade',
+					icon: params.type,
+					hideAfter: params.timeout,
+					position: 'bottom-right',
+					bgColor: params.color,
+					stack: 5
+				});
+			}
+		
 			/*
 			retrieve the app version and relocate the app logo
 			*/
@@ -138,6 +169,16 @@
 						
 			socket.on('system', function (msg) {
 				console.log(msg);
+				
+				if(msg.type === 'download_completed') {
+					alert({
+						title: 'Completed!',
+						message: msg.filename,
+						//color: '#b37700',
+						type: 'success',
+						timeout: 4000
+					});
+				}
 			});
 			
 			window.play = function (resource_id) {
@@ -147,6 +188,15 @@
 					resource_id: resource_id
 				});	
 			};
+			
+			window.download = function (resource_id, resource_title) {
+				console.log("remote: download resource: ", resource_id, ', title: ', resource_title);
+			
+				socket.emit('download', {
+					resource_id: resource_id,
+					resource_title: resource_title
+				});				
+			}
 		});
 	</script>
 	<script>			
@@ -193,7 +243,7 @@
 				}
 			}
 			
-			$scope.keyup = function($event) {
+			$scope.keyup = function ($event) {
 				console.log('key up: ', $event);
 				
 				if($event.keyCode === 13) { //enter
@@ -201,8 +251,20 @@
 				}
 			}
 			
-			$scope.playResource = function(resource_id) {				
+			$scope.playResource = function (resource_id) {				
 				play(resource_id);
+			}
+			
+			$scope.downloadResource = function (resource_id, resource_title) {
+				alert({
+					title: 'Downloading..',
+					message: resource_title,
+					//color: '#b37700',
+					type: 'warning',
+					timeout: 4000
+				});
+
+				download(resource_id, resource_title);
 			}
 			
 			$scope.bring2Top = function () {
