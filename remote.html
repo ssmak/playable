@@ -46,16 +46,16 @@
 		font-size: 1.8em;
 		cursor: pointer;
 	}
-	#search-panel {
+	#search-panel, #channel-panel {
 		background-color: rgb(250, 250, 250);
 		width: 100%;
 		padding: 15px;
 	}
-	#search-bar span.fa-youtube-play {
+	#search-bar span.fa-youtube-play, #channel-panel span.fa-youtube-play {
 		font-size: 1.5em;
 		color: red;
 	}
-	#search-panel span.fa-search {
+	#search-panel span.fa-search, $channel-panel span.fa-plug {
 		cursor: pointer;
 	}
 	#top-icon {
@@ -74,10 +74,17 @@
   </head>
   <body style="display:none">
 	<div class="container-fluid" ng-controller="root">
-		<div id="search-panel" class="col-xs-12">
+		<div id="channel-panel" class="col-xs-12">
+			<div id="channel-bar" class="input-group">
+			  <span class="input-group-addon" id="basic-addon1"><span class="fa fa-youtube-play"></span></span>
+			  <input id="channel" type="text" class="form-control" style="font-size:0.8em" placeholder="take a channel by letter, number or underscore." ng-keyup="keyup($event, 'join')">
+			  <span class="input-group-addon" id="basic-addon1"><span class="fa fa-plug" ng-click="joinChannel()"></span></span>
+			</div>
+		</div>	
+		<div id="search-panel" class="col-xs-12" style="display:none">
 			<div id="search-bar" class="input-group">
 			  <span class="input-group-addon" id="basic-addon1"><span class="fa fa-youtube-play"></span></span>
-			  <input name="search_keyword" type="text" class="form-control" placeholder="search something here.." ng-keyup="keyup($event)">
+			  <input name="search_keyword" type="text" class="form-control" placeholder="search something here.." ng-keyup="keyup($event, 'search')">
 			  <span class="input-group-addon" id="basic-addon1"><span class="fa fa-search" ng-click="newSearch()"></span></span>
 			</div>
 		</div>
@@ -90,9 +97,11 @@
 						<p>
 							{{ p.description }}
 						</p>
+						<!--
 						<p style="text-align:right">
 							<span class="fa fa-cloud-download" ng-click="downloadResource(p.id, p.title)"></span>
 						</p>
+						-->
 						<p style="font-size:0.7em; text-align:right">
 							{{ p.publishedAt }}
 						</p>
@@ -165,37 +174,43 @@
 			/*
 			connect to server websocket
 			*/
-			let socket = io();
-						
-			socket.on('system', function (msg) {
-				console.log(msg);
+			window.join = function (channel) {
+				//let socket = io();
+				let socket = io('/', {
+					query: 'room=' + channel
+				});
+							
+				socket.on('system', function (msg) {
+					console.log('receive system message');
+					console.log(msg);
+					
+					if(msg.type === 'download_completed') {
+						alert({
+							title: 'Completed!',
+							message: msg.filename,
+							//color: '#b37700',
+							type: 'success',
+							timeout: 4000
+						});
+					}
+				});
+
+				window.play = function (resource_id) {
+					console.log("remote: play resource: ", resource_id);
 				
-				if(msg.type === 'download_completed') {
-					alert({
-						title: 'Completed!',
-						message: msg.filename,
-						//color: '#b37700',
-						type: 'success',
-						timeout: 4000
-					});
-				}
-			});
-			
-			window.play = function (resource_id) {
-				console.log("remote: play resource: ", resource_id);
-			
-				socket.emit('play', {
-					resource_id: resource_id
-				});	
-			};
-			
-			window.download = function (resource_id, resource_title) {
-				console.log("remote: download resource: ", resource_id, ', title: ', resource_title);
-			
-				socket.emit('download', {
-					resource_id: resource_id,
-					resource_title: resource_title
-				});				
+					socket.emit('play', {
+						resource_id: resource_id
+					});	
+				};
+				
+				window.download = function (resource_id, resource_title) {
+					console.log("remote: download resource: ", resource_id, ', title: ', resource_title);
+				
+					socket.emit('download', {
+						resource_id: resource_id,
+						resource_title: resource_title
+					});				
+				}				
 			}
 		});
 	</script>
@@ -234,6 +249,15 @@
 				$scope.search(keyword, $scope.limit, null);
 			}
 			
+			$scope.joinChannel = function () {
+				let channel = $('#channel').val();
+				if(/[a-z0-9_]+/i.test(channel)) {
+					join(channel);
+					$('#channel-panel').css('display', 'none');
+					$('#search-panel').css('display', 'block');
+				}
+			}
+			
 			$scope.loadMore = function () {
 				if(!$scope.is_loading) {
 					console.log('load more, next page token: ', $scope.next_page_token);
@@ -243,18 +267,27 @@
 				}
 			}
 			
-			$scope.keyup = function ($event) {
+			$scope.keyup = function ($event, source) {
 				console.log('key up: ', $event);
 				
 				if($event.keyCode === 13) { //enter
-					$scope.newSearch();
+					if(source == 'search') {
+						$scope.newSearch();
+					}
+					
+					if(source == 'join') {
+						$scope.joinChannel();
+					}
 				}
 			}
 			
-			$scope.playResource = function (resource_id) {				
-				play(resource_id);
+			$scope.playResource = function (resource_id) {		
+				if(typeof(play) === 'function') {
+					play(resource_id);				
+				}
 			}
 			
+			/*
 			$scope.downloadResource = function (resource_id, resource_title) {
 				alert({
 					title: 'Downloading..',
@@ -266,6 +299,7 @@
 
 				download(resource_id, resource_title);
 			}
+			*/
 			
 			$scope.bring2Top = function () {
 				$window.scrollTo(0, 0);
@@ -281,7 +315,8 @@
 			
 			//default
 			$scope.is_loading = true;
-			$scope.search($scope.keyword, $scope.limit, $scope.next_page_token);
+			//$scope.search($scope.keyword, $scope.limit, $scope.next_page_token);
+			$scope.search('', $scope.limit, $scope.next_page_token);
 		});
 		angular.element(function () {
 			$('body').css('display', 'block');

@@ -56,6 +56,10 @@
 		<div id="playable-title">
 			<span>Playable</span><span id="app-ver"></span>
 		</div>
+		<div id="channel-block" style="display:block">
+			<input id="channel" type="text" class="form-control" style="display:blcok; width:290px; margin:0 auto; font-size:0.7em" placeholder="take a channel by letter, number or underscore." />
+			<button id="join" class="btn btn-default" style="display:inline; margin-top:5px">Join</button>
+		</div>
 	</div>
 	<div class="embed-responsive embed-responsive-16by9">
 		<!-- https://www.youtube.com/embed/OtEJ6LGCW-U?list=RDOtEJ6LGCW-U&amp;controls=0&amp;showinfo=0&autoplay=1&hd=1 -->
@@ -104,43 +108,69 @@
 					window.location = '';
 				}
 			});
+			
+			$('#channel').keyup(function ($event) {
+				console.log('key up: ', $event);
+				
+				if($event.keyCode === 13) { //enter
+					$('#join').trigger('click'); 
+				}
+			});	
+			
+			$('#join').click(function () {
+				
+				let channel = ($('#channel').val());;
+				if(/[a-z0-9_]+/i.test(channel)) {
+					console.log('join to channel: ', channel);
+					
+					$('#channel-block').css('display', 'none');
+					$('#channel-block').html('joined to channel: <strong>' + channel + '</strong>');
+					$('#channel-block').css('display', 'block');
+					
+					join(channel);
+				}
+			});
 		
 			/*
 			make a socket and connect to server
 			*/
-			let socket = io();
-			socket.on('play', function (cmd) {
-				console.log("viewer: receive cmd:");
-				console.log(cmd);
-				
-				if(cmd.resource_id) {
-					console.log("play resource id: " + cmd.resource_id);
+			let join = function (channel) {
+				let socket = io('/', {
+					query: 'room=' + channel
+				});
+				socket.on('play', function (cmd) {
+					console.log("viewer: receive cmd:");
+					console.log(cmd);
 					
-					is_init = true;
-					$('#logo').css('display', 'none');
-					
-					if(!player) {
-						//new player
-						/*
-						replace the 'ytplayer' element with an <iframe> and
-						YouTube player after the API code downloads.
-						*/
-						player = new YT.Player('ytplayer', {
-							videoId: cmd.resource_id,
-							events: {
-							'onReady': function (event) {
-								//play video immediately
-								event.target.playVideo();
-							}
-						  }		  
-						});						
-					} else {
-						//player already existed
-						player.loadVideoById(cmd.resource_id);
+					if(cmd.resource_id) {
+						console.log("play resource id: " + cmd.resource_id);
+						
+						is_init = true;
+						$('#logo').css('display', 'none');
+						
+						if(!player) {
+							//new player
+							/*
+							replace the 'ytplayer' element with an <iframe> and
+							YouTube player after the API code downloads.
+							*/
+							player = new YT.Player('ytplayer', {
+								videoId: cmd.resource_id,
+								events: {
+								'onReady': function (event) {
+									//play video immediately
+									event.target.playVideo();
+								}
+							  }		  
+							});						
+						} else {
+							//player already existed
+							player.loadVideoById(cmd.resource_id);
+						}
+											
 					}
-										
-				}
-			});
+				});
+			}
 		});
 	</script>
   </body>

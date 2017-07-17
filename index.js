@@ -8,6 +8,8 @@ const io = require('socket.io')(http);
 const moment = require('moment');
 const fs = require('fs');
 const ytdl = require('ytdl-core');
+const argv = require('yargs').argv;
+
 
 app.use(express.static(path.join(__dirname, '/')));
 app.get('/', function (req, res) {
@@ -17,21 +19,29 @@ app.get('/remote', function (req, res) {
 	res.sendFile(__dirname + '/remote.html');
 });
 
-io.on('connection', function (socket) {
-	console.log('a user connected');
+io.of('/').on('connection', function (socket) {
+	console.log('user connected');
+	
+	let room = socket.handshake.query.room;
+	socket.join(room);
 	
 	socket.on('disconnect', function () {
 		console.log('user disconnected');
+		
+		socket.leave(room);
 	});
 	
+
 	socket.on('play', function (cmd) {
 		console.log('receive remote cmmand: ');
 		console.log(cmd);
 				
-		socket.broadcast.emit('play', cmd);
+		socket.to(room).emit('play', cmd);
 	});
 	
 	socket.on('download', function (cmd) {
+		/*
+		
 		console.log('download the resource: ');
 		console.log(cmd);
 		
@@ -52,7 +62,7 @@ io.on('connection', function (socket) {
 			function (filename) {
 				output_stream.on('finish', function () {
 					console.log("complete download");
-					console.log(filename);
+					console.log(filename, 'room: ', room);
 					socket.emit('system', {
 						type: 'download_completed',
 						filename: filename
@@ -62,6 +72,8 @@ io.on('connection', function (socket) {
 		)(filename);
 		let video = ytdl('http://www.youtube.com/watch?v=' + cmd.resource_id);
 		video.pipe(output_stream);
+		
+		*/
 	});
 	
 	socket.on('error', function (err) {
@@ -72,6 +84,14 @@ io.on('connection', function (socket) {
 	});
 });
 
-http.listen(3303, function () {
-	console.log('listening on *:3303');
+
+/*
+entry point
+*/
+if(!argv.debug) {
+	console.log = function (){};
+}
+var port = argv.port ? argv.port : 8080
+http.listen(port, function () {
+	console.log('listening on *:', port);
 });
