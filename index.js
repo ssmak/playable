@@ -24,6 +24,10 @@ io.of('/').on('connection', function (socket) {
 	
 	let room = socket.handshake.query.room;
 	socket.join(room);
+	//ack to client (channel joined)
+	socket.emit('system', {
+		type: 'channel_joined'
+	});
 	
 	socket.on('disconnect', function () {
 		console.log('user disconnected');
@@ -32,6 +36,9 @@ io.of('/').on('connection', function (socket) {
 	});
 	
 
+	/*
+	play video request handling
+	*/
 	socket.on('play', function (cmd) {
 		console.log('receive remote cmmand: ');
 		console.log(cmd);
@@ -39,9 +46,11 @@ io.of('/').on('connection', function (socket) {
 		socket.to(room).emit('play', cmd);
 	});
 	
+	/*
+	download request handling
+	*/
+	/*
 	socket.on('download', function (cmd) {
-		/*
-		
 		console.log('download the resource: ');
 		console.log(cmd);
 		
@@ -72,9 +81,8 @@ io.of('/').on('connection', function (socket) {
 		)(filename);
 		let video = ytdl('http://www.youtube.com/watch?v=' + cmd.resource_id);
 		video.pipe(output_stream);
-		
-		*/
 	});
+	*/
 	
 	socket.on('error', function (err) {
 		console.log('socket err: ');
@@ -89,8 +97,10 @@ io.of('/').on('connection', function (socket) {
 entry point
 */
 if(!argv.debug) {
+	//hidden console output
 	console.log = function (){};
 }
+//default binding port is 8080 if no specified port no
 var port = argv.port ? argv.port : 8080
 http.listen(port, function () {
 	console.log('listening on *:', port);
