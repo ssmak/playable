@@ -14,7 +14,7 @@ I have a daughter. She is 3 years old and likes watching Youtube on iPad. Howeve
 This is a full web based solution and work with socker.io and Youtube API.
 
 This project is tried to bring the view from iPad to a large TV or monitor but leaving the control in the iPad (So the child can be still happy on touch, touch, touch.. but view on a large monitor).
-
+<br />
 <div align="center">
   <a href="https://paypal.me/ssmak">
     <img src="https://img.shields.io/badge/Donate-PayPal-green.svg" alt="PayPal Donation" />
@@ -52,6 +52,7 @@ http://localhost:8080/remote
 ```
 7. Join a channel with the same channel id and with FUN!!
 <br />
+
 ## Customization
 The port 8080 is used by default and you can change to other port by passing the argument --port.
 
