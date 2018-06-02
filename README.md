@@ -51,7 +51,7 @@ http://localhost:8080
 http://localhost:8080/remote
 ```
 7. Join a channel with the same channel id and with FUN!!
-
+<br />
 ## Customization
 The port 8080 is used by default and you can change to other port by passing the argument --port.
 
