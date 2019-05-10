@@ -67,7 +67,7 @@ The port 8080 is used by default and you can change to other port by passing the
 
 ## Additional
 1. As a web service, it can be run as Docker. You can find the Dockerfile under the project root.
-2. Youtube API request an api-token, please replace the project default token by your own in this file <b>resource-loader.js</b><br />
+2. Youtube API requests an api-token, please replace the project default token by your own in this file <b>./resource-loader.js</b>. Then, use browserify(http://browserify.org) to bundle as <b>./resource-loader.bundle.min.js</b>. That's it!<br />
 ```javascript
 var opts = {
 	maxResults: 10,
