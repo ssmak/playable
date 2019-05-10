@@ -19,13 +19,13 @@
 	<meta name="apple-mobile-web-app-capable" content="yes"><!-- hiding Safari UI -->
 	<meta name="apple-mobile-web-app-status-bar-style" content="black"><!-- changing the status bar appearance -->
 	<!-- Android/Chrome setting -->
-	<link rel="manifest" href="manifest.json">	
+	<link rel="manifest" href="manifest.json">
     <link rel="icon" href="favicon.ico">
     <title>Playable(R)</title>
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
 	<link rel="stylesheet" href="node_modules/font-awesome/css/font-awesome.min.css">
 	<link rel="stylesheet" href="node_modules/jquery-toast-plugin/dist/jquery.toast.min.css">
-	<style>	
+	<style>
 	body {
 		font-size:12pt;
 		margin: 0;
@@ -90,7 +90,7 @@
 			  <input id="channel" type="text" class="form-control" style="font-size:0.8em" placeholder="take a channel by letter, number or underscore." ng-keyup="keyup($event, 'join')">
 			  <span class="input-group-addon" id="basic-addon1"><span class="fa fa-plug" ng-click="joinChannel()">&nbsp;Join</span></span>
 			</div>
-		</div>	
+		</div>
 		<div id="search-panel" class="col-xs-12" style="display:none">
 			<div id="search-bar" class="input-group">
 			  <span class="input-group-addon" id="basic-addon1"><span class="fa fa-youtube-play"></span></span>
@@ -117,31 +117,31 @@
 						</p>
 					</div>
 				</div>
-			</div>		
+			</div>
 		</div>
 		<div ng-show="is_loading" style="width:100%; text-align:center">
 			<img class="img-responsive" src="loading.gif"/>
 		</div>
 		<div id="top-icon" class="clickable" ng-click="bring2Top()"><span class="fa fa-level-up"></span></div>
 		<div id="watermark"></div>
-	</div> 
+	</div>
 	<script src="node_modules/jquery/dist/jquery.min.js"></script>
 	<script src="node_modules/jquery-toast-plugin/dist/jquery.toast.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
 	<script src="node_modules/angular/angular.min.js"></script>
 	<script src="/socket.io/socket.io.js"></script>
-	<script src="./resource-loader.bundle.min.js"></script>			
+	<script src="./resource-loader.bundle.min.js"></script>
 	<script>
 		//app running mode
 		var DEBUG = true;
-		
+
 		if(!DEBUG) {
 			console.log = function () {};
 			console.error = function () {};
 		}
 	</script>
-	<script>			
+	<script>
 		const app = angular.module('app', []);
 		app.controller("root", function ($scope, $window) {
 			/*
@@ -151,11 +151,11 @@
 				if(!params) {
 					return;
 				}
-			
+
 				if(!('type' in params)) {
 					params.type = 'info';
 				}
-				
+
 				$.toast({
 					heading: params.title,
 					text: params.message,
@@ -167,7 +167,7 @@
 					stack: 5
 				});
 			}
-			
+
 			/*
 			join to channel by name
 			*/
@@ -176,12 +176,12 @@
 				$scope.socket = io('/', {
 					query: 'room=' + channel
 				});
-				
+
 				//received message handling
 				$scope.socket.on('system', function (msg) {
 					console.log('receive system message');
 					console.log(msg);
-					
+
 					if(msg.type === 'download_completed') {
 						$scope.alert({
 							title: 'Completed!',
@@ -201,20 +201,20 @@
 						});
 					}
 				});
-				
+
 				/*
 				//request server to download the vidoe from Youtube
 				$scope.download = function (resource_id, resource_title) {
 					console.log("remote: download resource: ", resource_id, ', title: ', resource_title);
-				
+
 					$scope.socket.emit('download', {
 						resource_id: resource_id,
 						resource_title: resource_title
-					});				
+					});
 				}
-				*/				
-			}			
-			
+				*/
+			}
+
 			/*
 			search video from Youtube by keywords
 			*/
@@ -223,7 +223,7 @@
 				.then(function (result) {
 					console.dir(result.results);
 					console.dir(result.page_info);
-					
+
 					//store the next page token
 					if(result.page_info.nextPageToken && /^[a-z0-9]+$/i.test(result.page_info.nextPageToken)) {
 						$scope.next_page_token = result.page_info.nextPageToken;
@@ -238,51 +238,51 @@
 				})
 				.catch(function (err) {
 					console.error(err);
-					
+
 					$scope.is_loading = false;
-				});				
+				});
 			};
-			
+
 			/*
 			send (play video) request to server then player
 			*/
 			$scope.play = function (resource_id) {
 				console.log("remote: play resource: ", resource_id);
-			
+
 				$scope.socket.emit('play', {
 					resource_id: resource_id
-				});	
+				});
 			};
-			
+
 			/*
 			infinite loading
 			*/
 			$scope.loadMore = function () {
 				if(!$scope.is_loading) {
 					console.log('load more, next page token: ', $scope.next_page_token);
-					
+
 					$scope.is_loading = true;
 					$scope.search($scope.keyword, $scope.limit, $scope.next_page_token);
 				}
 			}
-			
+
 			/*
 			keyboard (enter) listener
 			*/
 			$scope.keyup = function ($event, source) {
 				console.log('key up: ', $event);
-				
+
 				if($event.keyCode === 13) { //enter
 					if(source == 'search') {
 						$scope.newSearch();
 					}
-					
+
 					if(source == 'join') {
 						$scope.joinChannel();
 					}
 				}
 			}
-			
+
 			/*
 			join channel (link up function)
 			*/
@@ -309,11 +309,11 @@
 							//color: '#b37700',
 							type: 'info',
 							timeout: 10000
-						});					
+						});
 					}
 				}
-			}				
-			
+			}
+
 			/*
 			search video from Youtube (link up function)
 			*/
@@ -322,15 +322,15 @@
 				$scope.keyword = keyword;
 				$scope.playable = [];
 				$scope.search(keyword, $scope.limit, null);
-			}	
-			
+			}
+
 			/*
 			player vidoe (link up function)
 			*/
-			$scope.playResource = function (resource_id) {		
-				$scope.play(resource_id);				
+			$scope.playResource = function (resource_id) {
+				$scope.play(resource_id);
 			}
-			
+
 			/*
 			$scope.downloadResource = function (resource_id, resource_title) {
 				$scope.alert({
@@ -344,14 +344,14 @@
 				$scope.download(resource_id, resource_title);
 			}
 			*/
-			
+
 			/*
 			scroll to top (window scrolling)
 			*/
 			$scope.bring2Top = function () {
 				$window.scrollTo(0, 0);
 			}
-			
+
 			/*
 			register event
 			*/
@@ -360,22 +360,22 @@
 				if(($(window).scrollTop() + $(window).height()) > ($(document).height() - 100)) {
 					loadMore();
 				}
-			});			
-			
+			});
+
 			//initial variables
 			$scope.socket = null;
 			$window.loadMore = $scope.loadMore;
 			$scope.limit = 50;
 			$scope.is_loading = false;
-			$scope.playable = [];			
+			$scope.playable = [];
 			$scope.next_page_token = null;
-			$scope.keyword = "Wing fung Financial Group";
-			
+			$scope.keyword = "";
+
 			//default
 			$scope.is_loading = true;
 			$scope.search('五月天', $scope.limit, $scope.next_page_token); //default searching keyword '五月天 Mayday' <-- Yeah! :P
 		});
-		
+
 		angular.element(function () {
 			//angular app is loaded and ready to go
 			/*
@@ -385,10 +385,10 @@
 				$('input[name=search_keyword]').attr('placeholder', 'search some keyword(s)');
 				$('#watermark').html($('title').html() + ' (v' + content.version + ')');
 			});
-			
+
 			//make the page visible
 			$('body').css('display', 'block');
 		});
 	</script>
   </body>
-</html>  
+</html>
