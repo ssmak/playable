@@ -3,6 +3,15 @@
 <h5 align="center">Control the playback of Youtube on PC / Tablet / Mobile from any web browsers.</h5>
 
 <br />
+<div align="center">
+  <a href="https://github.com/ssmak/playable">
+    <img src="https://img.shields.io/badge/version-v1.0.0-blueviolet.svg" />
+  </a>
+  <a href="https://github.com/ssmak/playable">
+    <img src="https://img.shields.io/badge/env-nodejs-orange.svg" />
+  </a>
+</div>
+<br />
 
 ``` bash
 git clone https://github.com/ssmak/playable.git ~/playable.git
